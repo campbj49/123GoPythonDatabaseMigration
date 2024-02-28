@@ -3,7 +3,6 @@ import pandas as pd
 def markupToImport(markedUpSheet):#create blank sheet to be filled out by the rest of the logic
     migrationSheet = pd.DataFrame()
 
-
     #loop through each of the sheet's columns
     for column in markedUpSheet.columns:
         #process each column's properties, constructing the definition header if the column is active
@@ -43,20 +42,19 @@ def markupToImport(markedUpSheet):#create blank sheet to be filled out by the re
                     migrationSheet.at[index+2,column] = val
                     #if this is an entity type column unique values are put into the sheet being constructed
                     if type(subSheet) == type(pd.DataFrame()) and val not in subSheet[0].unique():
-                        print(subSheet[0].isin([val]).isin([True]))
                         subSheet.at[curSubIndex,0] =  val
                         curSubIndex += 1
             #at the end of each column, if there was a subsheet constructed it can be saved to disk
             if type(subSheet) == type(pd.DataFrame()):
                 addVisGroups(subSheet)
-                subSheet.to_excel(f"{tableName}_Migration.xlsx")
+                subSheet.to_excel(f"tmp_sheets/{tableName}_Migration.xlsx")
 
 
     #add the visibility group column to the resulting sheet
     addVisGroups(migrationSheet) 
 
     #once all the rows have been process export the constructed dataframe
-    migrationSheet.to_excel("exported.xlsx")
+    migrationSheet.to_excel("tmp_sheets/Migration.xlsx")
     print("Sheet successfully exported")
 
 #function that adds the visibility groups to the end of a dataframe
