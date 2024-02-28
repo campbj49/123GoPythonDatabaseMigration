@@ -21,7 +21,7 @@ migrationSheet = pd.DataFrame()
 #loop through each of the sheet's columns
 for column in markedUpSheet.columns:
     #process each column's properties, constructing the definition header if the column is active
-    if markedUpSheet.at["Active",column]:
+    if markedUpSheet.at["active",column]:
         #declare the variables relavant to the whole column
         subSheet = False
         defStr = ""
