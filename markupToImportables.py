@@ -26,6 +26,7 @@ for column in markedUpSheet.columns:
         subSheet = False
         defStr = ""
         tableName = ""
+        curSubIndex = 0
         if not markedUpSheet.at["name",column] or not markedUpSheet.at["dataType",column]:
             raise Exception("Column " + column + " is missing its name and/or dataType")
         #iterate over whole active column, using the header rows to construct the defString
@@ -43,6 +44,7 @@ for column in markedUpSheet.columns:
                     [tableName, columnName] = markedUpSheet.at["entityRef",column].split(".")
                     subSheet.at[0,0] = f"name={columnName},dataType=text,updateCriteria=true"
                     subSheet.at[1,0] = columnName
+                    curSubIndex = 2
                 defStr+=f"{index}={val}"
             
             #-1 index marks the original column title. val can be igored and instead the top of the migration column can be set
@@ -54,9 +56,10 @@ for column in markedUpSheet.columns:
             elif type(index) == type(1):
                 migrationSheet.at[index+2,column] = val
                 #if this is an entity type column unique values are put into the sheet being constructed
-                if type(subSheet) == type(pd.DataFrame()) and val not in subSheet[0]:
-                    print(val)
-                    subSheet[0] = subSheet[0].add(val)
+                if type(subSheet) == type(pd.DataFrame()) and val not in subSheet[0].unique():
+                    print(subSheet[0].isin([val]).isin([True]))
+                    subSheet.at[curSubIndex,0] =  val
+                    curSubIndex += 1
         #at the end of each column, if there was a subsheet constructed it can be saved to disk
         if type(subSheet) == type(pd.DataFrame()):
             addVisGroups(subSheet)
