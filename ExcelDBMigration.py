@@ -5,6 +5,11 @@ def markupToImport(markedUpSheet, filename):
     #create blank sheet to be filled out by the rest of the logic
     migrationSheet = pd.DataFrame()
 
+    #verify the formatting of the passed file
+    for reqAttr in ["name","active","dataType"]:
+        if reqAttr not in list(markedUpSheet.index.values):
+            raise Exception(f"Required attribute row missing: {reqAttr}")
+
     #loop through each of the sheet's columns
     for column in markedUpSheet.columns:
         #process each column's properties, constructing the definition header if the column is active
@@ -14,8 +19,8 @@ def markupToImport(markedUpSheet, filename):
             defStr = ""
             tableName = ""
             curSubIndex = 0
-            if not markedUpSheet.at["name",column] or not markedUpSheet.at["dataType",column]:
-                raise Exception("Column " + column + " is missing its name and/or dataType")
+            if pd.isna(markedUpSheet.at["name",column]) or pd.isna(markedUpSheet.at["dataType",column]):
+                raise Exception(f"Column {column} is missing its name and/or dataType")
             #iterate over whole active column, using the header rows to construct the defString
             for index, val in markedUpSheet[column].items():
                 #string type indexes have the attributes needed for the defStr
@@ -25,6 +30,8 @@ def markupToImport(markedUpSheet, filename):
 
                     #construct the subentity migration sheet
                     if(index=="dataType" and val =="entity"):
+                        if "entityRef" not in list(markedUpSheet.index.values) or pd.isna(markedUpSheet.at["entityRef",column]):
+                            raise Exception(f"entityRef is a required value a column number {column}")
                         val = "entity:" + markedUpSheet.at["entityRef",column]
                         subSheet = pd.DataFrame()
                         #construct the the file name and column name from entityRef input
@@ -57,7 +64,7 @@ def markupToImport(markedUpSheet, filename):
 
     #once all the rows have been process export the constructed dataframe
     migrationSheet.to_excel("tmp_sheets/"+filename)
-    print("Sheet successfully exported")
+    print(filename+" successfully exported")
 
 #function that adds the visibility groups to the end of a dataframe
 def addVisGroups(sheet):
@@ -78,7 +85,7 @@ if "tmp_sheets" not in os.listdir():
 for file in os.listdir():
     if ".xlsx" in file:
         try:
-            markedUpSheet = pd.read_excel("ExcelSheets/Items_Markup.xlsx", header=None, index_col=0)
+            markedUpSheet = pd.read_excel(file, header=None, index_col=0)
             markupToImport(markedUpSheet, "MIGRATION_"+file)
         except Exception as error:
             print(f"{file} threw the following error: {error}")

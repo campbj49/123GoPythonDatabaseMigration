@@ -7,5 +7,5 @@ if "tmp_sheets" not in os.listdir():
 
 for file in os.listdir():
     if ".xlsx" in file:
-        markedUpSheet = pd.read_excel("ExcelSheets/Items_Markup.xlsx", header=None, index_col=0)
+        markedUpSheet = pd.read_excel(file, header=None, index_col=0)
         markupToImport(markedUpSheet, "MIGRATION_"+file)
