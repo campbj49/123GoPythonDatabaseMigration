@@ -1,6 +1,8 @@
 import pandas as pd
+import os
 
-def markupToImport(markedUpSheet):#create blank sheet to be filled out by the rest of the logic
+def markupToImport(markedUpSheet, filename):
+    #create blank sheet to be filled out by the rest of the logic
     migrationSheet = pd.DataFrame()
 
     #loop through each of the sheet's columns
@@ -47,14 +49,14 @@ def markupToImport(markedUpSheet):#create blank sheet to be filled out by the re
             #at the end of each column, if there was a subsheet constructed it can be saved to disk
             if type(subSheet) == type(pd.DataFrame()):
                 addVisGroups(subSheet)
-                subSheet.to_excel(f"tmp_sheets/{tableName}_Migration.xlsx")
+                subSheet.to_excel(f"tmp_sheets/MIGRATION_{tableName}.xlsx")
 
 
     #add the visibility group column to the resulting sheet
     addVisGroups(migrationSheet) 
 
     #once all the rows have been process export the constructed dataframe
-    migrationSheet.to_excel("tmp_sheets/Migration.xlsx")
+    migrationSheet.to_excel("tmp_sheets/"+filename)
     print("Sheet successfully exported")
 
 #function that adds the visibility groups to the end of a dataframe
@@ -67,3 +69,16 @@ def addVisGroups(sheet):
 
     for index in range(2,sheet.shape[0]):
         sheet.at[index,visGroupCol] = -1
+
+        
+
+if "tmp_sheets" not in os.listdir():
+    os.mkdir("tmp_sheets")
+
+for file in os.listdir():
+    if ".xlsx" in file:
+        try:
+            markedUpSheet = pd.read_excel("ExcelSheets/Items_Markup.xlsx", header=None, index_col=0)
+            markupToImport(markedUpSheet, "MIGRATION_"+file)
+        except Exception as error:
+            print(f"{file} threw the following error: {error}")
