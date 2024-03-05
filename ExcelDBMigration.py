@@ -1,6 +1,9 @@
 import pandas as pd
 import os
 
+#Current driver is at the bottom of this file and it exports all the xlsx files in the same directory
+
+
 def markupToImport(markedUpSheet, filename):
     #create blank sheet to be filled out by the rest of the logic
     migrationSheet = pd.DataFrame()
@@ -56,7 +59,7 @@ def markupToImport(markedUpSheet, filename):
             #at the end of each column, if there was a subsheet constructed it can be saved to disk
             if type(subSheet) == type(pd.DataFrame()):
                 addVisGroups(subSheet)
-                subSheet.to_excel(f"tmp_sheets/MIGRATION_{tableName}.xlsx")
+                subSheet.to_excel(f"tmp_sheets/MIGRATION_{tableName}.xlsx", index=False, header=False)
 
 
     #add the visibility group column to the resulting sheet
