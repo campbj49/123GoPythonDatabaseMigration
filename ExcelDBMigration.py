@@ -8,6 +8,9 @@ def markupToImport(markedUpSheet, filename):
     #create blank sheet to be filled out by the rest of the logic
     migrationSheet = pd.DataFrame()
 
+    #test casting
+    markedUpSheet.astype({4:int})
+
     #verify the formatting of the passed file
     for reqAttr in ["name","active","dataType"]:
         if reqAttr not in list(markedUpSheet.index.values):
@@ -27,7 +30,7 @@ def markupToImport(markedUpSheet, filename):
             #iterate over whole active column, using the header rows to construct the defString
             for index, val in markedUpSheet[column].items():
                 #string type indexes have the attributes needed for the defStr
-                if type(index) == type("string") and val and not pd.isna(val) and (index != "Active" and index!="entityRef"):
+                if type(index) == type("string") and val and not pd.isna(val) and (index != "active" and index!="entityRef"):
                     #attach the commas to the defStr at the top to prevent the trailing comma
                     if defStr: defStr+=","
 
@@ -66,7 +69,8 @@ def markupToImport(markedUpSheet, filename):
     addVisGroups(migrationSheet) 
 
     #once all the rows have been process export the constructed dataframe
-    migrationSheet.to_excel("tmp_sheets/"+filename)
+    print(migrationSheet[4])
+    migrationSheet.to_excel("tmp_sheets/"+filename, index=False, header=False)
     print(filename+" successfully exported")
 
 #function that adds the visibility groups to the end of a dataframe
