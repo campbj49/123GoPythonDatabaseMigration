@@ -1,15 +1,20 @@
 import pandas as pd
 import os
+from pydoc import locate
 
 #Current driver is at the bottom of this file and it exports all the xlsx files in the same directory
 
+#core to python type conversion dictionary
+c2PConvert = {
+    "text":"str",
+    "entity":"str",
+    "number":"float",
+    "checkbox":"bool"
+}
 
 def markupToImport(markedUpSheet, filename):
     #create blank sheet to be filled out by the rest of the logic
     migrationSheet = pd.DataFrame()
-
-    #test casting
-    markedUpSheet.astype({4:int})
 
     #verify the formatting of the passed file
     for reqAttr in ["name","active","dataType"]:
@@ -27,6 +32,7 @@ def markupToImport(markedUpSheet, filename):
             curSubIndex = 0
             if pd.isna(markedUpSheet.at["name",column]) or pd.isna(markedUpSheet.at["dataType",column]):
                 raise Exception(f"Column {column} is missing its name and/or dataType")
+            colType = markedUpSheet.at["dataType",column]
             #iterate over whole active column, using the header rows to construct the defString
             for index, val in markedUpSheet[column].items():
                 #string type indexes have the attributes needed for the defStr
@@ -54,6 +60,10 @@ def markupToImport(markedUpSheet, filename):
 
                 #nonnegative number type indexes have the actual values
                 elif type(index) == type(1):
+                    #cast values into the the corresponding python types if possible
+                    if colType in c2PConvert.keys():
+                        correctType = locate(c2PConvert[colType])
+                        val = correctType(val)
                     migrationSheet.at[index+2,column] = val
                     #if this is an entity type column unique values are put into the sheet being constructed
                     if type(subSheet) == type(pd.DataFrame()) and val not in subSheet[0].unique():
@@ -69,7 +79,6 @@ def markupToImport(markedUpSheet, filename):
     addVisGroups(migrationSheet) 
 
     #once all the rows have been process export the constructed dataframe
-    print(migrationSheet[4])
     migrationSheet.to_excel("tmp_sheets/"+filename, index=False, header=False)
     print(filename+" successfully exported")
 
