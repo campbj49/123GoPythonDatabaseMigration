@@ -58,17 +58,24 @@ def markupToImport(markedUpSheet, filename):
                     migrationSheet.at[0,column] = defStr
                     migrationSheet.at[1,column] = markedUpSheet.at["name",column]
 
-                #nonnegative number type indexes have the actual values
-                elif type(index) == type(1):
+                #nonnegative number type indexes have the actual values, skipping blank cels
+                elif type(index) == type(1) and not pd.isna(val):
                     #cast values into the the corresponding python types if possible
                     if colType in c2PConvert.keys():
                         correctType = locate(c2PConvert[colType])
                         val = correctType(val)
+
+                    #handle date formatting
+                    if colType == "date":
+                        val = str(val.strftime('%d/%m/%Y'))
+                    
                     migrationSheet.at[index+2,column] = val
+
                     #if this is an entity type column unique values are put into the sheet being constructed
                     if type(subSheet) == type(pd.DataFrame()) and val not in subSheet[0].unique():
                         subSheet.at[curSubIndex,0] =  val
                         curSubIndex += 1
+                    
             #at the end of each column, if there was a subsheet constructed it can be saved to disk
             if type(subSheet) == type(pd.DataFrame()):
                 addVisGroups(subSheet)
